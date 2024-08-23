@@ -6,6 +6,7 @@ mongoose.connect('mongodb+srv://loic_pllr:j577RkdyK5MNlVwZ@cluster0.ps3ct7v.mong
     .catch(err => console.log('Connexion à MongoDB échouée !', err));
 
 const booksRoutes = require('./routes/books');
+const userRoutes = require('./routes/users');
 
 const app = express();
 
@@ -19,5 +20,6 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 app.use('/api/books', booksRoutes);
+app.use('/api/auth', userRoutes);
 
 module.exports = app;

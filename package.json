@@ -9,8 +9,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "express": "^4.19.2",
-    "mongoose": "^8.5.0"
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.5.0",
+    "mongoose-unique-validator": "^5.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"
