@@ -7,10 +7,10 @@ const router = express.Router();
 const booksController = require('../controllers/books')
 
 router.get('/', booksController.getAllBooks);
+router.get('/bestrating', booksController.getBestRatingBooks);
 router.get('/:id', booksController.getBook);
 router.post('/', auth, multer, booksController.createBook);
-router.put('/:id', multer, auth, booksController.modifyBook);
+router.put('/:id', auth, multer, booksController.modifyBook);
 router.delete('/:id', auth, booksController.deleteBook);
-router.get('/bestrating', booksController.getBestRatingBooks);
-
+router.post('/:id/rating', auth, booksController.addRating);
 module.exports = router;

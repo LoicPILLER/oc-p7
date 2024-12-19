@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const path = require('path');
 
 mongoose.connect('mongodb+srv://loic_pllr:j577RkdyK5MNlVwZ@cluster0.ps3ct7v.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
     .then(() => console.log('Connexion à MongoDB réussie !'))

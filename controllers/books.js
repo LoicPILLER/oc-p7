@@ -1,4 +1,8 @@
 const Book = require("../models/Book");
+const User = require("../models/User");
+const fs = require('fs');
+const path = require('path');
+const sharp = require('sharp');
 
 exports.getBook = (req, res, next) => {
     Book.findOne({ _id: req.params.id })
@@ -33,13 +37,27 @@ exports.modifyBook = (req, res, next)=> {
 
     delete bookObject._userID;
     Book.findOne({_id: req.params.id})
-        .then((thing) => {
+        .then((book) => {
             if (book.userId != req.auth.userId) {
                 res.status(401).json({message: 'Not authorized'});
             } else {
-                Book.updateOne({_id: req.params.id}, {...req.body, _id: req.params.id})
-                    .then(() => res.status(200).json({message: 'Livre mis à jour !'}))
-                    .catch(error => res.status(400).json({error}));
+                const updateBook = () => {
+                    Book.updateOne({ _id: req.params.id }, { ...bookObject, _id: req.params.id })
+                        .then(() => res.status(200).json({ message: 'Livre mis à jour !' }))
+                        .catch((error) => res.status(400).json({ error }));
+                };
+
+                if (req.file && book.imageUrl) {
+                    const filename = book.imageUrl.split('/images/')[1];
+                    fs.unlink(`images/${filename}`, (err) => {
+                        if (err) {
+                            console.error(err);
+                        }
+                        updateBook();
+                    });
+                } else {
+                    updateBook();
+                }
             }
         })
         .catch((error) => {
@@ -62,7 +80,7 @@ exports.deleteBook = (req, res, next) => {
             }
         })
         .catch((error) => {
-            res.status(500).json({ error });
+            res.status(400).json({ error });
         });
 }
 
@@ -83,3 +101,40 @@ exports.getBestRatingBooks = (req, res, next) => {
             res.status(500).json({ error });
         });
 }
+
+exports.addRating = (req, res, next) => {
+    const { userId, rating } = req.body;
+
+    if (!userId || typeof rating !== 'number' || rating < 0 || rating > 5) {
+        console.error('Invalid input:', { userId, rating });
+        return res.status(400).json({ message: 'Note ou identifiant utilisateur invalide' });
+    }
+
+    Book.findOne({ _id: req.params.id })
+        .then(book => {
+
+            if (book.ratings.some(r => r.userId === userId)) {
+                return res.status(400).json({ message: 'Vous avez déjà noté ce livre' });
+            }
+
+            book.ratings.push({ userId, grade: rating });
+            const totalRatings = book.ratings.length;
+            const averageRating = book.ratings.reduce((sum, r) => sum + r.grade, 0) / totalRatings;
+
+            book.averageRating = Math.round(averageRating);
+
+            return book.save()
+                .then(() => {
+                    res.status(200).json({ message: 'Note ajoutee avec succes', book });
+                })
+                .catch(error => {
+                    res.status(500).json({ message: 'Erreur lors de l\'enregistrement du livre', error });
+                });
+        })
+        .catch(error => {
+            console.error('Database query error:', error);
+            res.status(404).json({ message: 'Book not found', error });
+        });
+};
+
+
