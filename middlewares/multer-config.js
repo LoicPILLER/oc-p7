@@ -20,7 +20,7 @@ const compressAndSaveImage = (req, res, next) => {
         }
 
         if (!req.file) {
-            return res.status(400).send({ error: 'Aucune image téléchargée.' });
+            return next();
         }
 
         try {
